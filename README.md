@@ -1,7 +1,6 @@
 # BasicMedia Flutter App
-
 ## Overview
-BasicMedia is a social media application built using Flutter and Firebase. It allows users to create posts, comment on them, share them, and manage their profiles.
+BasicMedia is a social media application built using Flutter and Firebase. It allows users to create posts, comment on them, share them, and manage their profiles. Additionally, users can contact the developer through a dedicated contact form within the app.
 
 ## Features
 - User authentication.
