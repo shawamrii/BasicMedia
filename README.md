@@ -22,4 +22,4 @@ BasicMedia is a social media application built using Flutter and Firebase. It al
 ### Installation
 1. Clone the repository:
    ```bash
-   git clone https://github.com/your-github-username/BasicMedia.git
+   git clone https://github.com/shawamrii/My-APP.git/
