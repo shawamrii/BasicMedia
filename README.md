@@ -9,6 +9,8 @@ BasicMedia is a social media application built using Flutter and Firebase. It al
 - Profile management.
 - Upload and display images.
 - Share posts externally.(in Progress..)
+- ## Live Application
+Access the live application here: [BasicMedia](https://basicmedia-fc13c.web.app/)
 
 ## Getting Started
 
