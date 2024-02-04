@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <!-- ... other head elements ... -->
+  <base href="$FLUTTER_BASE_HREF">
+  <meta charset="UTF-8">
+  <!-- ... other meta tags ... -->
+
+  <title>basic_media</title>
+  <link rel="manifest" href="manifest.json">
+
+  <!-- Firebase Configuration -->
+  <script src="https://www.gstatic.com/firebasejs/8.0.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.0.0/firebase-auth.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.0.0/firebase-messaging.js"></script>
+ <script>
+    var firebaseConfig = {
+  apiKey: "AIzaSyA0sYaLgXE0XgwkUTWOm5hkzGHpalsPi4M",
+  authDomain: "basicmedia-fc13c.firebaseapp.com",
+  databaseURL: "https://basicmedia-fc13c-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId: "basicmedia-fc13c",
+  storageBucket: "basicmedia-fc13c.appspot.com",
+  messagingSenderId: "441903825924",
+  appId: "1:441903825924:web:9036b1ef5fd1bd66002151",
+  measurementId: "G-F325WSZ19E"
+};
+
+    // Initialize Firebase
+    firebase.initializeApp(firebaseConfig);
+    //firebase.analytics();
+  </script>
+
+  <!-- This script adds the flutter initialization JS code -->
+  <script src="flutter.js" defer></script>
+</head>
+<body>
+<!-- ... body content ... -->
+<script src="main.dart.js" type="application/javascript"></script>
+</body>
+</html>
