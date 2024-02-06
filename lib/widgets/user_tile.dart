@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import '../screens/profile_screen.dart';
+import '../screens/another_profile_screen.dart';
 import '../themedata/theme.dart';
 
 class UserTile extends StatelessWidget {
@@ -17,7 +17,7 @@ class UserTile extends StatelessWidget {
       onTap: () {
         Navigator.of(context).push(
           MaterialPageRoute(
-            builder: (context) => ProfileScreen(userId: userId),
+            builder: (context) => AnotherProfileScreen(userId: userId),
           ),
         );
       },

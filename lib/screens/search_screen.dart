@@ -1,3 +1,4 @@
+/*
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../themedata/theme.dart'; // Import LuxuryTheme
@@ -56,6 +57,41 @@ class UserTile extends StatelessWidget {
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+*/
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
+
+import '../widgets/LuxuryAppBar.dart';
+import '../widgets/user_tile.dart';
+
+class UserListScreen extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: LuxuryAppBar(title: 'Users'),
+      body: StreamBuilder(
+        stream: FirebaseFirestore.instance.collection('users').snapshots(),
+        builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return Center(child: CircularProgressIndicator());
+          }
+          if (snapshot.hasError) {
+            return Center(child: Text('Error: ${snapshot.error}'));
+          }
+          if (!snapshot.hasData) {
+            return Center(child: Text('No users found'));
+          }
+          return ListView(
+            children: snapshot.data!.docs.map((DocumentSnapshot document) {
+              return UserTile(userSnapshot: document);
+            }).toList(),
+          );
+        },
       ),
     );
   }

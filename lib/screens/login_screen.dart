@@ -55,7 +55,7 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
             child: Column(
               children: <Widget>[
                 LuxuryTextField( // Updated to LuxuryTextField
-                  hintText: 'Email or Username',
+                  hintText: 'Email',
                   controller: _emailController,
                   onChanged: (val) => setState(() => email = val.trim()),
                 ),

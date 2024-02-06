@@ -1,3 +1,4 @@
+import 'package:basic_media/screens/search_screen.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -20,17 +21,45 @@ class _HomeScreenState extends State<HomeScreen> {
       appBar: LuxuryAppBar(
         title: 'Home',
         actions: <Widget>[
+          TextButton(
+            onPressed: () {
+              Navigator.pushNamed(context, '/about_us');
+            },
+            child: Text(
+              'About Us',
+              style: TextStyle(
+                color: LuxuryTheme.gold,
+              ),
+            ),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.pushNamed(context, '/contact_us');
+            },
+            child: Text(
+              'Contact Us',
+              style: TextStyle(
+                color: LuxuryTheme.gold,
+              ),
+            ),
+          ),
           IconButton(
             icon: Icon(Icons.account_circle, color: LuxuryTheme.gold),
             onPressed: () => Navigator.pushNamed(context, '/profile'),
           ),
-          IconButton(
-            icon: Icon(Icons.contact_mail, color: LuxuryTheme.gold),
-            onPressed: () => Navigator.pushNamed(context, '/contact_us'),
-          ),
+
           IconButton(
             icon: Icon(Icons.exit_to_app, color: LuxuryTheme.gold),
             onPressed: () => _showLogoutConfirmation(context),
+          ),
+          IconButton(
+            icon: Icon(Icons.search, color: Theme.of(context).primaryColor), // Use the appropriate color for the icon
+            onPressed: () {
+              // Navigate to the UserListScreen when the search icon is tapped
+              Navigator.of(context).push(MaterialPageRoute(
+                builder: (context) => UserListScreen(),
+              ));
+            },
           ),
         ],
       ),

@@ -1,9 +1,9 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../widgets/LuxuryAppBar.dart';
 import '../widgets/LuxuryButton.dart';
 import '../widgets/LuxuryTextField.dart';
-import '../themedata/theme.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
@@ -14,43 +14,68 @@ class ContactUsScreen extends StatefulWidget {
 
 class _ContactUsScreenState extends State<ContactUsScreen> {
   final TextEditingController _nameController = TextEditingController();
-  final TextEditingController _emailController = TextEditingController();
   final TextEditingController _messageController = TextEditingController();
+  final TextEditingController _subjectController = TextEditingController();
+  User? user = FirebaseAuth.instance.currentUser; // Moved user here
 
 
 
   Future<void> _submitForm() async {
-    final response = await http.post(
-      Uri.parse('http://your-backend-url/sendemail'),
-      headers: <String, String>{
-        'Content-Type': 'application/json; charset=UTF-8',
-      },
-      body: jsonEncode(<String, String>{
-        'to': _emailController.text,
-        'subject': 'Contact From App - ${_nameController.text}',
-        'text': 'Name: ${_nameController.text}\nEmail: ${_emailController.text}\nMessage: ${_messageController.text}',
+    // This assumes _fetchUserEmail has already been called and userEmail is set
+    final String emailBody = 'Name: ${_nameController.text}\n'
+        'Message: ${_messageController.text}';
+
+    final Uri emailLaunchUri = Uri(
+      scheme: 'mailto',
+      path: "m1.shawamreh@gmail.com", // The user's email you fetched
+      query: encodeQueryParameters(<String, String>{
+        'subject': _subjectController.text,
+        'body': emailBody,
       }),
     );
 
-    if (response.statusCode == 200) {
-      // Successfully sent the email
-      print('Email sent');
+    // Use url_launcher to launch the email app
+    if (await canLaunch(emailLaunchUri.toString())) {
+      await launch(emailLaunchUri.toString());
     } else {
-      // Failed to send the email
-      print('Failed to send email: ${response.body}');
+      _showErrorDialog('Could not launch email app.');
     }
-
-    _nameController.clear();
-    _emailController.clear();
-    _messageController.clear();
-    Navigator.of(context).pop();
   }
 
+  String encodeQueryParameters(Map<String, String> params) {
+    return params.entries
+        .map((e) =>
+    '${Uri.encodeComponent(e.key)}=${Uri.encodeComponent(e.value)}')
+        .join('&');
+  }
+
+  void _showErrorDialog(String message) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Error'),
+          content: Text(message),
+          actions: <Widget>[
+            LuxuryButton(
+              label:"Close",
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+/*
   String encodeQueryParameters(Map<String, String> params) {
     return params.entries
         .map((e) => '${Uri.encodeComponent(e.key)}=${Uri.encodeComponent(e.value)}')
         .join('&');
   }
+*/
 
 
   @override
@@ -68,8 +93,8 @@ class _ContactUsScreenState extends State<ContactUsScreen> {
             ),
             SizedBox(height: 10),
             LuxuryTextField(
-              hintText: 'Your Email',
-              controller: _emailController,
+              hintText: 'Subject',
+              controller: _subjectController,
             ),
             SizedBox(height: 10),
             LuxuryTextField(

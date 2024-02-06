@@ -1,10 +1,16 @@
+import 'dart:html';
+
 import 'package:basic_media/screens/Contact_us_screen.dart';
+import 'package:basic_media/screens/about_us_screen.dart';
+import 'package:basic_media/screens/another_profile_screen.dart';
+import 'package:basic_media/screens/another_users_posts_screen.dart';
 import 'package:basic_media/screens/edit_profile_screen.dart';
 import 'package:basic_media/screens/home_screen.dart';
 import 'package:basic_media/screens/login_screen.dart';
 import 'package:basic_media/screens/new_post_screen.dart';
 import 'package:basic_media/screens/profile_screen.dart';
 import 'package:basic_media/screens/registration_screen.dart';
+import 'package:basic_media/screens/search_screen.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
@@ -43,7 +49,9 @@ class MyApp extends StatelessWidget {
         '/profile': (context) => ProfileScreen(userId: FirebaseAuth.instance.currentUser?.uid ?? ""),
         '/edit_profile': (context) => EditProfileScreen(),
         '/contact_us': (context) => ContactUsScreen(),
-
+        '/user_profile': (context) => AnotherProfileScreen(userId: ""),
+        '/user_posts': (context) => AnotherPostsScreen(userId: ""),
+        '/about_us': (context) => AboutDeveloperScreen(),
 
       },
     );

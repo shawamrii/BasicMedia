@@ -144,7 +144,7 @@ Future<void> _selectDate(BuildContext context) async {
         });
 
         await result.sendEmailVerification();
-        Navigator.pop(context); // Navigate back to the login screen
+        Navigator.pushReplacementNamed(context, '/login'); // Navigate back to the login screen
       } else {
         setState(() => error = result ?? 'Registration failed');
       }
