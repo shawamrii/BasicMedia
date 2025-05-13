@@ -1,6 +1,4 @@
-// login_screen.dart
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import '../services/auth_service.dart';
 import '../widgets/LuxuryAppBar.dart';
 import '../widgets/LuxuryButton.dart';
@@ -15,36 +13,34 @@ class LoginScreen extends StatefulWidget {
 
 class _LoginScreenState extends State<LoginScreen>
     with SingleTickerProviderStateMixin {
-  final AuthService _authService = AuthService();
+  final AuthService _auth = AuthService();
   final _formKey = GlobalKey<FormState>();
-  final TextEditingController _emailController = TextEditingController();
-  final TextEditingController _passwordController = TextEditingController();
+  final _idCtrl = TextEditingController();
+  final _pwCtrl = TextEditingController();
 
-  late final AnimationController _animCtrl = AnimationController(
+  late final AnimationController _fadeCtrl = AnimationController(
     vsync: this,
     duration: const Duration(seconds: 2),
   )..forward();
   late final Animation<double> _fade =
       Tween(begin: 0.0, end: 1.0).animate(CurvedAnimation(
-    parent: _animCtrl,
+    parent: _fadeCtrl,
     curve: Curves.easeIn,
   ));
 
-  String emailOrUsername = '';
+  String identifier = '';
   String password = '';
   String error = '';
 
   @override
   void dispose() {
-    _animCtrl.dispose();
-    _emailController.dispose();
-    _passwordController.dispose();
+    _fadeCtrl.dispose();
+    _idCtrl.dispose();
+    _pwCtrl.dispose();
     super.dispose();
   }
 
-  // ─────────────────────────────────────────────────────────────────────
-  //   UI
-  // ─────────────────────────────────────────────────────────────────────
+  // ────────────────────────────────────────────────────────── UI
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -55,28 +51,32 @@ class _LoginScreenState extends State<LoginScreen>
           opacity: _fade,
           child: Form(
             key: _formKey,
-            child: Column(
+            child: ListView(
               children: [
                 LuxuryTextField(
                   hintText: 'E-Mail oder Username',
-                  controller: _emailController,
-                  onChanged: (v) =>
-                      setState(() => emailOrUsername = v.trim()),
+                  controller: _idCtrl,
+                  onChanged: (v) => identifier = v.trim(),
                 ),
                 const SizedBox(height: 20),
                 LuxuryTextField(
                   hintText: 'Passwort',
-                  controller: _passwordController,
+                  controller: _pwCtrl,
                   obscureText: true,
-                  onChanged: (v) => setState(() => password = v),
+                  onChanged: (v) => password = v,
                 ),
-                const SizedBox(height: 20),
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: TextButton(
+                    onPressed: _showForgotDialog,
+                    child: const Text('Passwort vergessen?'),
+                  ),
+                ),
+                const SizedBox(height: 10),
                 LuxuryButton(
                   label: 'Login',
                   onPressed: () async {
-                    if (_formKey.currentState!.validate()) {
-                      await _login();
-                    }
+                    if (_formKey.currentState!.validate()) await _login();
                   },
                 ),
                 const SizedBox(height: 12),
@@ -93,57 +93,56 @@ class _LoginScreenState extends State<LoginScreen>
     );
   }
 
-  // ─────────────────────────────────────────────────────────────────────
-  //   LOGIN-LOGIK
-  // ─────────────────────────────────────────────────────────────────────
+  // ───────────────────────────────────── Login mit Verifikations-Check
   Future<void> _login() async {
     setState(() => error = '');
-
-    final user = await _authService.signIn(
-      identifier: emailOrUsername,
-      password: password,
-    );
+    final user =
+        await _auth.signIn(identifier: identifier, password: password);
 
     if (user != null) {
-      // Erfolg
-      if (mounted) {
-        Navigator.pushReplacementNamed(context, '/home');
-      }
+      if (mounted) Navigator.pushReplacementNamed(context, '/home');
     } else {
-      // Prüfen, ob unverifizierte E-Mail der Grund war
-      if (_authService
-              .resendVerificationEmail is Function && // safety
-          await _authService.resendVerificationEmail()) {
-        _showVerifyDialog();
-      } else {
-        setState(() => error = 'Anmeldung fehlgeschlagen.');
-      }
+      setState(() => error = 'Anmeldung fehlgeschlagen.');
     }
   }
 
-  // ─────────────────────────────────────────────────────────────────────
-  //   Dialog → Verifizierungs-Mail erneut senden
-  // ─────────────────────────────────────────────────────────────────────
-  void _showVerifyDialog() {
+  // ───────────────────────────────────── Passwort-Reset Dialog
+  void _showForgotDialog() {
+    String input = identifier; // vorbefüllt, falls schon eingegeben
     showDialog(
       context: context,
       builder: (_) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: const Row(
-          children: [
-            Icon(Icons.mark_email_unread, color: Colors.orange),
-            SizedBox(width: 8),
-            Text('E-Mail nicht bestätigt'),
-          ],
-        ),
-        content: const Text(
-          'Bitte bestätige deine E-Mail-Adresse, ehe du dich einloggst.\n'
-          'Wir haben dir gerade eine neue Bestätigungs-Mail geschickt.',
+        title: const Text('Passwort zurücksetzen'),
+        content: TextField(
+          decoration: const InputDecoration(
+            labelText: 'E-Mail oder Username',
+            border: OutlineInputBorder(),
+          ),
+          controller: TextEditingController(text: input),
+          onChanged: (v) => input = v.trim(),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('OK'),
+            child: const Text('Abbrechen'),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              final success =
+                  await _auth.sendPasswordReset(identifier: input);
+              Navigator.pop(context);
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(
+                    success
+                        ? 'Passwort-Reset-E-Mail gesendet.'
+                        : 'Zurücksetzen fehlgeschlagen.',
+                  ),
+                ),
+              );
+            },
+            child: const Text('E-Mail senden'),
           ),
         ],
       ),
