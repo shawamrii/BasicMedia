@@ -1,9 +1,7 @@
-// main.dart
+// luxury_ui_widgets.dart
 import 'package:flutter/material.dart';
 
-void main() => runApp(const MyApp());
-
-// ───────────────────────────────────────────────────────── LuxuryTheme
+// ───────────────────────────────────────────── Luxury Theme
 class LuxuryTheme {
   static const Color gold   = Color(0xFFD4AF37);
   static const Color silver = Color(0xFFC0C0C0);
@@ -11,7 +9,7 @@ class LuxuryTheme {
 
   static final TextTheme text = TextTheme(
     headline1: const TextStyle(
-      fontFamily: 'ElegantFont',
+      fontFamily: 'ElegantFont', // eigene Schrift einbinden
       fontSize: 32,
       color: gold,
       fontWeight: FontWeight.w600,
@@ -34,7 +32,7 @@ class LuxuryTheme {
   );
 }
 
-// ───────────────────────────────────────────────────────── Helper-Widgets
+// ───────────────────────────────────────────── Luxury Widgets
 class LuxuryAppBar extends AppBar {
   LuxuryAppBar({super.key, required String title})
       : super(
@@ -95,68 +93,4 @@ class LuxuryTextField extends StatelessWidget {
           ),
         ),
       );
-}
-
-// ───────────────────────────────────────────────────────── Root-App
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Luxury UI',
-      debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        scaffoldBackgroundColor: LuxuryTheme.dark,
-        appBarTheme: LuxuryTheme.appBar,
-        textTheme: LuxuryTheme.text,
-        elevatedButtonTheme:
-            ElevatedButtonThemeData(style: LuxuryTheme.button),
-      ),
-      home: const HomeScreen(),
-    );
-  }
-}
-
-// ───────────────────────────────────────────────────────── HomeScreen
-class HomeScreen extends StatelessWidget {
-  const HomeScreen({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: LuxuryAppBar(title: 'Luxury Home'),
-      body: Center(
-        child: Container(
-          constraints: const BoxConstraints(maxWidth: 400),
-          padding: const EdgeInsets.all(24),
-          decoration: BoxDecoration(
-            color: LuxuryTheme.dark.withOpacity(.8),
-            borderRadius: BorderRadius.circular(24),
-            boxShadow: [
-              BoxShadow(
-                color: LuxuryTheme.gold.withOpacity(.2),
-                blurRadius: 12,
-                offset: const Offset(0, 6),
-              ),
-            ],
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text('Willkommen!', style: Theme.of(context).textTheme.headline1),
-              const SizedBox(height: 24),
-              const LuxuryTextField(hintText: 'E-Mail'),
-              const LuxuryTextField(hintText: 'Passwort', obscureText: true),
-              const SizedBox(height: 24),
-              LuxuryButton(
-                label: 'Einloggen',
-                onPressed: () {},
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
 }
