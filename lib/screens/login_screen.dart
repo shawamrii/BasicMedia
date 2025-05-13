@@ -1,3 +1,4 @@
+// login_screen.dart
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../services/auth_service.dart';
@@ -6,87 +7,84 @@ import '../widgets/LuxuryButton.dart';
 import '../widgets/LuxuryTextField.dart';
 
 class LoginScreen extends StatefulWidget {
+  const LoginScreen({super.key});
+
   @override
-  _LoginScreenState createState() => _LoginScreenState();
+  State<LoginScreen> createState() => _LoginScreenState();
 }
 
-class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStateMixin {
+class _LoginScreenState extends State<LoginScreen>
+    with SingleTickerProviderStateMixin {
   final AuthService _authService = AuthService();
   final _formKey = GlobalKey<FormState>();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
 
-  AnimationController? _animationController;
-  Animation<double>? _opacityAnimation;
+  late final AnimationController _animCtrl = AnimationController(
+    vsync: this,
+    duration: const Duration(seconds: 2),
+  )..forward();
+  late final Animation<double> _fade =
+      Tween(begin: 0.0, end: 1.0).animate(CurvedAnimation(
+    parent: _animCtrl,
+    curve: Curves.easeIn,
+  ));
 
-  String email = '';
+  String emailOrUsername = '';
   String password = '';
   String error = '';
 
   @override
-  void initState() {
-    super.initState();
-    _animationController = AnimationController(
-      vsync: this,
-      duration: Duration(seconds: 2),
-    );
-    _opacityAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
-      CurvedAnimation(parent: _animationController!, curve: Curves.easeIn),
-    );
-    _animationController?.forward();
-  }
-
-  @override
   void dispose() {
-    _animationController?.dispose();
+    _animCtrl.dispose();
+    _emailController.dispose();
+    _passwordController.dispose();
     super.dispose();
   }
 
+  // ─────────────────────────────────────────────────────────────────────
+  //   UI
+  // ─────────────────────────────────────────────────────────────────────
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: LuxuryAppBar(title: 'Login'), // Updated to LuxuryAppBar
-      body: Container(
-        padding: EdgeInsets.symmetric(vertical: 20.0, horizontal: 50.0),
+      appBar: const LuxuryAppBar(title: 'Login'),
+      body: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 50),
         child: FadeTransition(
-          opacity: _opacityAnimation!,
+          opacity: _fade,
           child: Form(
             key: _formKey,
             child: Column(
-              children: <Widget>[
-                LuxuryTextField( // Updated to LuxuryTextField
-                  hintText: 'Email',
+              children: [
+                LuxuryTextField(
+                  hintText: 'E-Mail oder Username',
                   controller: _emailController,
-                  onChanged: (val) => setState(() => email = val.trim()),
+                  onChanged: (v) =>
+                      setState(() => emailOrUsername = v.trim()),
                 ),
-                SizedBox(height: 20.0),
-                LuxuryTextField( // Updated to LuxuryTextField
-                  hintText: 'Password',
+                const SizedBox(height: 20),
+                LuxuryTextField(
+                  hintText: 'Passwort',
                   controller: _passwordController,
                   obscureText: true,
-                  onChanged: (val) => setState(() => password = val),
+                  onChanged: (v) => setState(() => password = v),
                 ),
-                SizedBox(height: 20.0),
-                LuxuryButton( // Updated to LuxuryButton
+                const SizedBox(height: 20),
+                LuxuryButton(
                   label: 'Login',
                   onPressed: () async {
                     if (_formKey.currentState!.validate()) {
-                      await _loginUser();
+                      await _login();
                     }
                   },
                 ),
-                SizedBox(height: 12.0),
-                Text(
-                  error,
-                  style: TextStyle(color: Colors.red, fontSize: 14.0),
+                const SizedBox(height: 12),
+                Text(error, style: const TextStyle(color: Colors.red)),
+                LuxuryButton(
+                  label: 'Registrieren',
+                  onPressed: () => Navigator.pushNamed(context, '/register'),
                 ),
-                LuxuryButton( // Updated to LuxuryButton
-                  label: 'Register',
-                  onPressed: () {
-                    Navigator.pushNamed(context, '/register'); // Navigate to the registration screen
-                  },
-                ),
-
               ],
             ),
           ),
@@ -95,33 +93,60 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
     );
   }
 
-bool _isEmail(String input) {
-    return input.contains('@');
-  }
+  // ─────────────────────────────────────────────────────────────────────
+  //   LOGIN-LOGIK
+  // ─────────────────────────────────────────────────────────────────────
+  Future<void> _login() async {
+    setState(() => error = '');
 
-  // Method to handle user login
-  Future<void> _loginUser() async {
-    if (_formKey.currentState!.validate()) {
-      String loginInput = email; // This can be either email or username
+    final user = await _authService.signIn(
+      identifier: emailOrUsername,
+      password: password,
+    );
 
-      if (!_isEmail(loginInput)) {
-        // If input is username, retrieve the associated email
-        String? emailFromUsername = await _authService.getEmailFromUsername(loginInput);
-        if (emailFromUsername != null) {
-          loginInput = emailFromUsername;
-        } else {
-          setState(() => error = 'Username not found');
-          return;
-        }
+    if (user != null) {
+      // Erfolg
+      if (mounted) {
+        Navigator.pushReplacementNamed(context, '/home');
       }
-
-      dynamic result = await _authService.signInWithEmailAndPassword(loginInput, password);
-      if (result is User) {
-        Navigator.pushReplacementNamed(context, '/home'); // Navigate to the home screen on successful login
+    } else {
+      // Prüfen, ob unverifizierte E-Mail der Grund war
+      if (_authService
+              .resendVerificationEmail is Function && // safety
+          await _authService.resendVerificationEmail()) {
+        _showVerifyDialog();
       } else {
-        // Login failed, show error
-        setState(() => error = 'Failed to sign in');
+        setState(() => error = 'Anmeldung fehlgeschlagen.');
       }
     }
+  }
+
+  // ─────────────────────────────────────────────────────────────────────
+  //   Dialog → Verifizierungs-Mail erneut senden
+  // ─────────────────────────────────────────────────────────────────────
+  void _showVerifyDialog() {
+    showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: const Row(
+          children: [
+            Icon(Icons.mark_email_unread, color: Colors.orange),
+            SizedBox(width: 8),
+            Text('E-Mail nicht bestätigt'),
+          ],
+        ),
+        content: const Text(
+          'Bitte bestätige deine E-Mail-Adresse, ehe du dich einloggst.\n'
+          'Wir haben dir gerade eine neue Bestätigungs-Mail geschickt.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('OK'),
+          ),
+        ],
+      ),
+    );
   }
 }
